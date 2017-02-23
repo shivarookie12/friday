@@ -1,0 +1,115 @@
+#include <LiquidCrystal.h>
+int relay0=13,relay1=12,relay2=11,relay3=10,relay4=9,relay5=8,hello=7,manual=6;
+int arr[6]={0},temp,temp1;
+String brr[6]={"relay0","relay1","relay2","relay3","relay4","relay5"};
+String statuss=" ",readString;
+char inbyte = 0;
+void setup() {
+    Serial.begin(9600);
+    pinMode(relay0, OUTPUT);
+    pinMode(relay1,OUTPUT);
+    pinMode(relay2,OUTPUT);
+    pinMode(relay3,OUTPUT);
+    pinMode(relay4,OUTPUT);
+    pinMode(relay5,OUTPUT);
+    pinMode(hello,OUTPUT);
+    pinMode(manual,OUTPUT); 
+} 
+void loop() {
+    while (Serial.available()) {
+        delay(10);
+        char c = Serial.read();  
+        if (c == ',') {
+            break;
+        }  
+        if(c!='x'){
+            readString += c;
+        }
+    }
+    on(readString);
+}
+void on(String g){
+    if(g=="manual mode on" || g=="all device off"){
+        digitalWrite(relay0,LOW); delay(5);
+        digitalWrite(relay1,LOW); delay(5);
+        digitalWrite(relay2,LOW);delay(5);
+        digitalWrite(relay3,LOW); delay(5);
+        digitalWrite(relay4,LOW); delay(5);
+        digitalWrite(relay5,LOW); delay(5);
+        digitalWrite(hello,LOW);      
+        if(g=="manual mode on"){
+            digitalWrite(manual,HIGH);
+            sendAndroidValues("manual mode on");}
+        else{
+            sendAndroidValues("all device off");
+        }       
+    }
+    if(g=="all device on"){
+        digitalWrite(manual,LOW);
+        digitalWrite(relay0,HIGH); delay(5);
+        digitalWrite(relay1,HIGH); delay(5);
+        digitalWrite(relay2,HIGH);delay(5);
+        digitalWrite(relay3,HIGH); delay(5);
+        digitalWrite(relay4,HIGH); delay(5);
+        digitalWrite(relay5,HIGH); delay(5);
+        digitalWrite(hello,HIGH);
+        sendAndroidValues("all device on");
+    }
+    if (g =="relay1on"||g=="relay2on"||g=="relay3on"||g=="relay4on"||g=="relay5on"||g=="relay0on")
+    {
+        temp=Integer.parseInt(g.charAt(5));
+        arr[temp]++;
+        digitalWrite(brr[temp], HIGH);
+        digitalWrite(manual,LOW);
+        sendAndroidValues("successfully turned on the"+brr[temp]+"sir");
+    }
+    if(g=="manual mode off"){
+        digitalWrite(manual,LOW);
+        sendAndroidValues("manual mode off");
+    }
+    if (g =="relay1off"||g=="relay2off"||g=="relay3off"||g=="relay4off"||g=="relay5off"||g=="relay0off")
+    {
+        temp1=Integer.parseInt(g.charAt(5));
+        arr[temp1]=0;
+        digitalWrite(brr[temp1], LOW);
+        sendAndroidValues("successfully turned off the"+brr[temp]+"sir");
+    }
+
+    if(g=="home status"){        
+        for(i=0;i<6;i++){
+            if(arr[i]>0){
+                statuss+=(brr[i]+"on");
+                statuss+=" ";
+            }
+            else{
+                statuss+=(brr[i]+"off");
+                statuss+=" ";  
+            }
+        }
+        sendAndroidValues(statuss);
+        statuss=" ";
+    }
+    
+ if(g=="relay1status"||g=="relay2status"||g=="relay3status"||g=="relay4status"||g=="relay5status"||g=="relay0status"){
+        int text = Integer.parseInt(g.charAt(5));
+        if(arr[text]>1){
+            statuss+=(br[text]+"on");
+            sendAndroidValues(statuss);
+            statuss=" ";
+        }
+        else{
+            statuss+=(br[text]+"off");
+            sendAndroidValues(statuss);
+            statuss=" ";             
+        }
+    }
+}
+void sendAndroidValues(String f)
+{
+    Serial.print('#');
+    Serial.print(f);
+    Serial.print('~');
+    Serial.println();
+    f="";
+    delay(10);        
+}
